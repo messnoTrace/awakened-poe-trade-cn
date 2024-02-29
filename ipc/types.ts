@@ -4,6 +4,8 @@ export interface HostConfig {
   clientLog: string | null
   gameConfig: string | null
   stashScroll: boolean
+  poesessid: string
+  realm: string
   overlayKey: string
   logKeys: boolean
   windowTitle: string

@@ -77,6 +77,7 @@ export async function initConfig () {
   }
 
   updateConfig(upgradeConfig(config))
+  pushHostConfig()
 }
 
 export function poeWebApi () {
@@ -86,6 +87,9 @@ export function poeWebApi () {
     case 'ru': return 'ru.pathofexile.com'
     case 'cmn-Hant': return (realm === 'pc-garena')
       ? 'web.poe.garena.tw'
+      : 'www.pathofexile.com'
+    case 'zh_CN': return (realm === 'pc-tencent')
+      ? 'poe.game.qq.com'
       : 'www.pathofexile.com'
     case 'ko': return 'poe.game.daum.net'
   }
@@ -98,6 +102,7 @@ export interface Config {
   overlayBackground: string
   overlayBackgroundClose: boolean
   restoreClipboard: boolean
+  poesessid: string
   commands: Array<{
     text: string
     hotkey: string | null
@@ -109,8 +114,8 @@ export interface Config {
   logKeys: boolean
   accountName: string
   stashScroll: boolean
-  language: 'en' | 'ru' | 'cmn-Hant' | 'ko'
-  realm: 'pc-ggg' | 'pc-garena'
+  language: 'en' | 'ru' | 'cmn-Hant' | 'zh_CN' | 'ko'
+  realm: 'pc-ggg' | 'pc-garena' | 'pc-tencent' | 'ko'
   widgets: widget.Widget[]
   fontSize: number
   showAttachNotification: boolean
@@ -154,7 +159,8 @@ export const defaultConfig = (): Config => ({
   logKeys: false,
   accountName: '',
   stashScroll: true,
-  language: 'en',
+  language: 'zh_CN',
+  poesessid: '',
   realm: 'pc-ggg',
   fontSize: 16,
   widgets: [
@@ -186,6 +192,7 @@ export const defaultConfig = (): Config => ({
       smartInitialSearch: true,
       lockedInitialSearch: true,
       activateStockFilter: false,
+      offline: false,
       builtinBrowser: false,
       hotkey: 'D',
       hotkeyHold: 'Ctrl',
@@ -265,7 +272,7 @@ export const defaultConfig = (): Config => ({
     {
       wmId: 101,
       wmType: 'stash-search',
-      wmTitle: 'Map rolling',
+      wmTitle: '洗地图词缀',
       wmWants: 'hide',
       wmZorder: 101,
       wmFlags: ['invisible-on-blur'],
@@ -275,37 +282,14 @@ export const defaultConfig = (): Config => ({
         y: 46
       },
       entries: [
-        { id: 1, name: '', text: '"Pack Size: +3"', hotkey: null },
-        { id: 2, name: '', text: 'Reflect', hotkey: null },
-        { id: 3, name: '', text: '"Cannot Leech Life"', hotkey: null },
-        { id: 4, name: '', text: '"Cannot Leech Mana"', hotkey: null }
-      ]
-    } as widget.StashSearchWidget,
-    {
-      wmId: 102,
-      wmType: 'stash-search',
-      wmTitle: 'Dump sorting',
-      wmWants: 'hide',
-      wmZorder: 102,
-      wmFlags: ['invisible-on-blur'],
-      anchor: {
-        pos: 'tl',
-        x: 34,
-        y: 56
-      },
-      entries: [
-        { id: 1, name: '', text: 'Currency', hotkey: null },
-        { id: 2, name: '', text: '"Divination Card"', hotkey: null },
-        { id: 3, name: '', text: 'Fossil', hotkey: null },
-        { id: 4, name: '', text: '"Map Tier"', hotkey: null },
-        { id: 5, name: '', text: '"Map Device" "Rarity: Normal"', hotkey: null },
-        { id: 6, name: '', text: 'Tane Laboratory', hotkey: null }
+        { id: 1, name: '', text: '反射', hotkey: null },
+        { id: 2, name: '', text: '"无法再生"', hotkey: null }
       ]
     } as widget.StashSearchWidget,
     {
       wmId: 103,
       wmType: 'image-strip',
-      wmTitle: 'Cheat sheets',
+      wmTitle: '辛迪加奖励表(暂无中文)',
       wmWants: 'hide',
       wmZorder: 103,
       wmFlags: ['invisible-on-blur'],
@@ -513,6 +497,12 @@ function upgradeConfig (_config: Config): Config {
 
     config.configVersion = 15
   }
+  if (config.configVersion < 16) {
+    config.widgets.find(w => w.wmType === 'price-check')!
+      .offline = false
+
+    config.configVersion = 16
+  }
 
   if (config.configVersion < 16) {
     const delve = config.widgets.find(w => w.wmType === 'delve-grid') as widget.DelveGridWidget
@@ -673,6 +663,8 @@ function getConfigForHost (): HostConfig {
     overlayKey: config.overlayKey,
     logKeys: config.logKeys,
     windowTitle: config.windowTitle,
-    language: config.language
+    language: config.language,
+    realm: config.realm,
+    poesessid: config.poesessid
   }
 }

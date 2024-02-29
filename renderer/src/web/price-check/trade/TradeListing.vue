@@ -16,27 +16,30 @@
         <thead>
           <tr class="text-left">
             <th class="trade-table-heading">
-              <div class="px-2">{{ t(':price') }}</div>
+              <div class="px-2" style="width: max-content;">{{ t(':price') }}</div>
+            </th>
+            <th v-if="realm === 'pc-tencent'" class="trade-table-heading">
+              <div class="px-2" style="width: max-content;">{{ t('精准') }}</div>
             </th>
             <th v-if="item.stackSize" class="trade-table-heading">
-              <div class="px-2">{{ t(':stock') }}</div>
+              <div class="px-2" style="width: max-content;">{{ t(':stock') }}</div>
             </th>
             <th v-if="filters.itemLevel" class="trade-table-heading">
-              <div class="px-2">{{ t(':item_level') }}</div>
+              <div class="px-2" style="width: max-content;">{{ t(':item_level') }}</div>
             </th>
             <th v-if="item.category === 'Gem'" class="trade-table-heading">
-              <div class="px-2">{{ t(':gem_level') }}</div>
+              <div class="px-2" style="width: max-content;">{{ t(':gem_level') }}</div>
             </th>
             <th v-if="filters.quality || item.category === 'Gem'" class="trade-table-heading">
-              <div class="px-2">{{ t(':quality') }}</div>
+              <div class="px-2" style="width: max-content;">{{ t(':quality') }}</div>
             </th>
             <th class="trade-table-heading" :class="{ 'w-full': !showSeller }">
               <div class="pr-2 pl-4">
-                <span class="ml-1" style="padding-left: 0.375rem;">{{ t(':listed') }}</span>
+                <span class="ml-1" style="padding-left: 0.375rem; width: max-content;">{{ t(':listed') }}</span>
               </div>
             </th>
             <th v-if="showSeller" class="trade-table-heading w-full">
-              <div class="px-2">{{ t(':seller') }}</div>
+              <div class="px-2" style="width: max-content;">{{ t(':seller') }}</div>
             </th>
           </tr>
         </thead>
@@ -47,6 +50,7 @@
             </tr>
             <tr v-else :key="result.id">
               <td class="px-2 whitespace-nowrap"><span :class="{ 'line-through': result.priceCurrency === 'exalted' }">{{ result.priceAmount }} {{ result.priceCurrency }}</span> <span v-if="result.listedTimes > 2" class="rounded px-1 text-gray-800 bg-gray-400 -mr-2"><span class="font-sans">×</span> {{ result.listedTimes }}</span><i v-else-if="!result.hasNote" class="fas fa-question" /></td>
+              <td v-if="realm === 'pc-tencent'" class="px-2 whitespace-nowrap text-right">{{result.priceType === '=a/b/o' ? '是' : '否'}}</td>
               <td v-if="item.stackSize" class="px-2 text-right">{{ result.stackSize }}</td>
               <td v-if="filters.itemLevel" class="px-2 whitespace-nowrap text-right">{{ result.itemLevel }}</td>
               <td v-if="item.category === 'Gem'" class="pl-2 whitespace-nowrap">{{ result.level }}</td>
@@ -220,7 +224,7 @@ export default defineComponent({
     const showBrowser = inject<(url: string) => void>('builtin-browser')!
 
     function makeTradeLink () {
-      return (searchResult.value)
+      return (searchResult.value && (AppConfig().realm === 'pc-ggg'))
         ? `https://${getTradeEndpoint()}/trade/search/${props.filters.trade.league}/${searchResult.value.id}`
         : `https://${getTradeEndpoint()}/trade/search/${props.filters.trade.league}?q=${JSON.stringify(createTradeRequest(props.filters, props.stats, props.item))}`
     }
@@ -248,7 +252,8 @@ export default defineComponent({
       makeTradeLink,
       openTradeLink () {
         showBrowser(makeTradeLink())
-      }
+      },
+      realm: AppConfig().realm
     }
   }
 })

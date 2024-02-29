@@ -10,15 +10,23 @@ export const PROXY_HOSTS = [
   { host: 'poe.game.daum.net', official: true },
   { host: 'poe.ninja', official: false },
   { host: 'www.poeprices.info', official: false },
+  { host: 'poe.game.qq.com', official: true },
+  { host: 'www.poelab.com', official: false },
+  { host: 'pub-feb51ef2e03741399e6a3d2d09a07601.r2.dev', official: false },
+  { host: 'gitee.com', official: false }
 ]
 
 export class HttpProxy {
   cookiesForPoe = new Map<string, string>()
+  private poesessid: string = ''
+  private realm: string = ''
 
   constructor (
     server: Server,
     logger: Logger
   ) {
+    const rootCas = require('ssl-root-cas').create()
+    require('https').globalAgent.options.ca = rootCas
     server.addListener('request', (req, res) => {
       if (!req.url?.startsWith('/proxy/')) return
       const host = req.url.split('/', 3)[2]
@@ -26,11 +34,13 @@ export class HttpProxy {
       const official = PROXY_HOSTS.find(entry => entry.host === host)?.official
       if (official === undefined) return req.destroy()
 
+      if (this.realm === 'pc-tencent' && host === 'poe.game.qq.com'){
+              this.cookiesForPoe.set('POESESSID', this.poesessid)}
       const cookie = (official)
-        ? Array.from(this.cookiesForPoe.entries())
-            .map(([key, value]) => `${key}=${value}`)
-            .join('; ')
-        : ''
+          ? Array.from(this.cookiesForPoe.entries())
+              .map(([key, value]) => `${key}=${value}`)
+              .join('; ')
+          : ''
 
       const proxyReq = https.request(
         'https://' + req.url.slice('/proxy/'.length),
@@ -53,4 +63,10 @@ export class HttpProxy {
       req.pipe(proxyReq)
     })
   }
+
+  updateCookies( poesessid:string, realm:string ) {
+    this.poesessid = poesessid
+    this.realm = realm
+  }
+
 }

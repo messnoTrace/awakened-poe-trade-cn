@@ -8,6 +8,7 @@ import { STAT_BY_REF } from '@/assets/data'
 import { RateLimiter } from './RateLimiter'
 import { ModifierType } from '@/parser/modifiers'
 import { Cache } from './Cache'
+import { AppConfig } from '@/web/Config'
 
 export const CATEGORY_TO_TRADE_ID = new Map([
   [ItemCategory.Map, 'map'],
@@ -116,6 +117,9 @@ interface TradeRequest { /* eslint-disable camelcase */
           links?: FilterRange
           sockets?: {
             w?: number
+            r?: number
+            g?: number
+            b?: number
           }
         }
       }
@@ -182,6 +186,7 @@ interface TradeRequest { /* eslint-disable camelcase */
           collapse?: FilterBoolean
           indexed?: { option?: string }
           price?: FilterRange | { option?: string }
+          sale_type?: { option?: string }
         }
       }
     }
@@ -218,7 +223,7 @@ interface FetchResult {
     price?: {
       amount: number
       currency: string
-      type: '~price'
+      type: string
     }
     account: Account
   }
@@ -234,6 +239,7 @@ export interface PricingResult {
   relativeDate: string
   priceAmount: number
   priceCurrency: string
+  priceType: string
   isMine: boolean
   hasNote: boolean
   accountName: string
@@ -252,7 +258,7 @@ export function createTradeRequest (filters: ItemFilters, stats: StatFilter[], i
       stats: [
         { type: 'and', filters: [] }
       ],
-      filters: {}
+      filters: AppConfig().realm === 'pc-tencent' ? { trade_filters: { filters: { sale_type: { option: 'any' } } } } : {}
     },
     sort: {
       price: 'asc'
@@ -348,9 +354,25 @@ export function createTradeRequest (filters: ItemFilters, stats: StatFilter[], i
     propSet(query.filters, 'socket_filters.filters.sockets.w', filters.whiteSockets.value)
   }
 
+  if (filters.redSockets && !filters.redSockets.disabled) {
+    propSet(query.filters, 'socket_filters.filters.sockets.r', filters.redSockets.value)
+  }
+
+  if (filters.greenSockets && !filters.greenSockets.disabled) {
+    propSet(query.filters, 'socket_filters.filters.sockets.g', filters.greenSockets.value)
+  }
+
+  if (filters.blueSockets && !filters.blueSockets.disabled) {
+    propSet(query.filters, 'socket_filters.filters.sockets.b', filters.blueSockets.value)
+  }
+
   if (filters.mapTier && !filters.mapTier.disabled) {
     propSet(query.filters, 'map_filters.filters.map_tier.min', filters.mapTier.value)
     propSet(query.filters, 'map_filters.filters.map_tier.max', filters.mapTier.value)
+  }
+
+  if (filters.mapReward) {
+    propSet(query.filters, 'map_filters.filters.map_completion_reward.option', filters.mapReward)
   }
 
   if (filters.mapBlighted) {
@@ -470,6 +492,17 @@ export function createTradeRequest (filters: ItemFilters, stats: StatFilter[], i
     }
   }
 
+  if (item.mapTier === 17 &&
+    !stats.some(s => s.statRef === 'Players who Die in area are sent to the Void')) {
+    const reducedEffectId = STAT_BY_REF('Players who Die in area are sent to the Void')!.trade.ids[ModifierType.Explicit][0]
+    query.stats.push({
+      type: 'not',
+      filters: [
+        { id: reducedEffectId }
+      ]
+    })
+  }
+
   stats = stats.filter(stat => !INTERNAL_TRADE_IDS.includes(stat.tradeId[0] as any))
   if (filters.veiled) {
     for (const statRef of filters.veiled.statRefs) {
@@ -567,7 +600,7 @@ export async function requestResults (
     if (_data.error) {
       throw new Error(_data.error.message)
     } else {
-      data = _data.result.filter(res => res != null) as FetchResult[]
+      data = _data.result.filter(res => res != null && !res.item.note?.endsWith('.')) as FetchResult[]
     }
 
     cache.set<FetchResult[]>(resultIds, data, Cache.deriveTtl(...RATE_LIMIT_RULES.SEARCH, ...RATE_LIMIT_RULES.FETCH))
@@ -584,6 +617,7 @@ export async function requestResults (
       relativeDate: DateTime.fromISO(result.listing.indexed).toRelative({ style: 'short' }) ?? '',
       priceAmount: result.listing.price?.amount ?? 0,
       priceCurrency: result.listing.price?.currency ?? 'no price',
+      priceType: result.listing.price?.type ?? '',
       hasNote: result.item.note != null,
       isMine: (result.listing.account.name === opts.accountName),
       ign: result.listing.account.lastCharacterName,

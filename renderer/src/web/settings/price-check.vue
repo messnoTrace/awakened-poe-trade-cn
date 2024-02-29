@@ -62,6 +62,18 @@
       <ui-checkbox v-model="builtinBrowser">{{ t(':enable_browser') }}</ui-checkbox>
       <div v-if="builtinBrowser" class="mt-1">{{ t(':builtin_browser_warning') }}</div>
     </div>
+
+    <ui-checkbox class="mb-4"
+      v-model="offline">{{ t(':select_offline') }}</ui-checkbox>
+
+<!--    <div class="mb-2">-->
+<!--      <div class="flex-1 mb-1">{{ t(':select_offline') }}</div>-->
+<!--      <div class="mb-4 flex">-->
+<!--        <ui-radio v-model="offline" :value="false" class="mr-4">{{ t('Yes') }}</ui-radio>-->
+<!--        <ui-radio v-model="offline" :value="true">{{ t('No') }}</ui-radio>-->
+<!--      </div>-->
+<!--    </div>-->
+
     <div class="border-2 rounded border-gray-700 mb-2">
       <div class="bg-gray-700 p-2 mb-2">{{ t(':warn_expensive') }}</div>
       <ui-checkbox class="mb-4 mx-2" :values="['app', 'api']"
@@ -120,6 +132,7 @@ export default defineComponent({
       accountName: configModelValue(() => props.config, 'accountName'),
       showSeller: configModelValue(() => configWidget.value, 'showSeller'),
       activateStockFilter: configModelValue(() => configWidget.value, 'activateStockFilter'),
+      offline: configModelValue(() => configWidget.value, 'offline'),
       showCursor: configModelValue(() => configWidget.value, 'showCursor'),
       builtinBrowser: configModelValue(() => configWidget.value, 'builtinBrowser'),
       requestPricePrediction: configModelValue(() => configWidget.value, 'requestPricePrediction'),

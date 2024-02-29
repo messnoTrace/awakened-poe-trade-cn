@@ -7,15 +7,28 @@
         <option value="ru">Русский</option>
         <option value="cmn-Hant">正體中文</option>
         <option value="ko">한국어</option>
+        <option value="zh_CN">简体中文</option>
       </select>
     </div>
     <div class="mb-4" v-if="language === 'cmn-Hant'">
       <div class="flex-1 mb-1">{{ t('realm') }}</div>
       <div class="flex gap-x-4">
         <ui-radio v-model="realm" value="pc-ggg">{{ t('realm_intl') }}</ui-radio>
-        <ui-radio v-model="realm" value="pc-garena">{{ t('Garena') }}</ui-radio>
+        <ui-radio v-model="realm" value="pc-garena">{{ t('realm_garena') }}</ui-radio>
       </div>
     </div>
+    <div class="mb-4" v-if="language === 'zh_CN'">
+      <div class="flex-1 mb-1">{{ t('Realm') }}</div>
+      <div class="flex gap-x-4">
+        <ui-radio v-model="realm" value="pc-ggg">{{ t('realm_intl') }}</ui-radio>
+        <ui-radio v-model="realm" value="pc-tencent">{{ t('realm_tencent') }}</ui-radio>
+        <div class="flex gap-x-1" v-show="realm === 'pc-tencent'">
+          <div :class="{ 'text-red-500': poesessid.length !== 32 }">{{ t('POESESSID') }}</div>
+          <span><input v-model="poesessid" class="rounded bg-gray-900 px-2 flex-1"></span>
+        </div>
+      </div>
+    </div>
+
     <div class="mb-4">
       <div class="flex-1 mb-1">{{ t(':font_size') }}</div>
       <div class="flex gap-1">
@@ -78,12 +91,13 @@ export default defineComponent({
         set (value) {
           props.config.language = value
           AppConfig().language = value
-          if (value !== 'cmn-Hant') {
+          if (value !== 'cmn-Hant' && value !== 'zh_CN') {
             props.config.realm = 'pc-ggg'
           }
         }
       }),
       realm: configModelValue(() => props.config, 'realm'),
+      poesessid: configModelValue(() => props.config, 'poesessid'),
       restoreClipboard: configModelValue(() => props.config, 'restoreClipboard'),
       showAttachNotification: configModelValue(() => props.config, 'showAttachNotification'),
       windowTitle: configModelValue(() => props.config, 'windowTitle')

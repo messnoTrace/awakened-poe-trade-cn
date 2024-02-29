@@ -27,24 +27,24 @@
         <thead>
           <tr class="text-left">
             <th class="trade-table-heading">
-              <div class="px-2">{{ t(':price') }}</div>
+              <div class="px-2" style="width: max-content;">{{ t(':price') }}</div>
             </th>
             <th class="trade-table-heading">
-              <div class="pl-1 pr-2 flex text-xs" style="line-height: 1.3125rem;"><span class="w-8 inline-block text-right -ml-px mr-px">{{ (selectedCurr === 'xchgChaos') ? 'chaos' : 'div' }}</span><span>{{ '\u2009' }}/{{ '\u2009' }}</span><span class="w-8 inline-block">{{ t(':bulk') }}</span></div>
+              <div class="pl-1 pr-2 flex text-xs" style="line-height: 1.3125rem; width: max-content;"><span class="w-8 inline-block text-right -ml-px mr-px">{{ (selectedCurr === 'xchgChaos') ? 'chaos' : 'div' }}</span><span>{{ '\u2009' }}/{{ '\u2009' }}</span><span class="w-8 inline-block">{{ t(':bulk') }}</span></div>
             </th>
             <th class="trade-table-heading">
-              <div class="px-1">{{ t(':stock') }}</div>
+              <div class="px-1" style="width: max-content;">{{ t(':stock') }}</div>
             </th>
             <th class="trade-table-heading">
-              <div class="px-1">{{ t(':fulfill') }}</div>
+              <div class="px-1 w-20" style="width: max-content;">{{ t(':fulfill') }}</div>
             </th>
             <th class="trade-table-heading" :class="{ 'w-full': !showSeller }">
-              <div class="pr-2 pl-4">
+              <div class="pr-2 pl-4" style="width: max-content;">
                 <span class="ml-1" style="padding-left: 0.375rem;">{{ t(':listed') }}</span>
               </div>
             </th>
             <th v-if="showSeller" class="trade-table-heading w-full">
-              <div class="px-2">{{ t(':seller') }}</div>
+              <div class="px-2" style="width: max-content;">{{ t(':seller') }}</div>
             </th>
           </tr>
         </thead>

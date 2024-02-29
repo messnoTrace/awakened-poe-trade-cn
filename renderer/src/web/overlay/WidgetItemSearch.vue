@@ -112,10 +112,12 @@ function findItems (opts: {
   namespace: 'GEM' | 'UNIQUE'
   itemNames: () => Generator<string>
 }): BaseType[] | false {
+  const isCJK = (AppConfig().language === 'cmn-Hant' || AppConfig().language === 'zh_CN')
+  const minSearchLimit = isCJK ? 1 : 3
   const search = opts.search.trim()
   const lcSearch = search.toLowerCase().split(/\s+/).sort((a, b) => b.length - a.length)
   const lcLongestWord = lcSearch[0]
-  if (search.length < 3) return false
+  if (search.length < minSearchLimit) return false
 
   const MAX_RESULTS = 5 // NOTE: don't want to pick from too many results
   const out = []
@@ -123,7 +125,7 @@ function findItems (opts: {
     const lcName = itemName.toLowerCase()
     if (
       lcSearch.every(part => lcName.includes(part)) &&
-      ((AppConfig().language === 'cmn-Hant') || lcName.split(/\s+/).some(part => part.startsWith(lcLongestWord)))
+      (isCJK || lcName.split(/\s+/).some(part => part.startsWith(lcLongestWord)))
     ) {
       const match = ITEM_BY_TRANSLATED(opts.namespace, itemName)
       out.push(...match ?? [])
@@ -134,7 +136,7 @@ function findItems (opts: {
 }
 
 function fuzzyFindHeistGem (badStr: string) {
-  badStr = badStr.toLowerCase()
+  badStr = badStr.toLowerCase().replace(/[()（）【】 ]/g, '')
 
   const qualities = [
     ['Anomalous', _$.QUALITY_ANOMALOUS.toString().slice(2, -2)],
@@ -146,7 +148,7 @@ function fuzzyFindHeistGem (badStr: string) {
   let minDist = Infinity
   for (const name of ALTQ_GEM_NAMES()) {
     for (const [altQuality, reStr] of qualities) {
-      const exactStr = reStr.replace('(.*)', name).toLowerCase()
+      const exactStr = reStr.replace('(.*)', name).toLowerCase().replace(/[()（）【】 ]/g, '')
       if (Math.abs(exactStr.length - badStr.length) > 5) {
         continue
       }

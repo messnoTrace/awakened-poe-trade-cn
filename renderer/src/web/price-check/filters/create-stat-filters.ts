@@ -5,9 +5,10 @@ import { FilterTag, ItemHasEmptyModifier, StatFilter } from './interfaces'
 import { filterPseudo } from './pseudo'
 import { applyRules as applyAtzoatlRules } from './pseudo/atzoatl-rules'
 import { applyRules as applyMirroredTabletRules } from './pseudo/reflection-rules'
+import { applyRules as applyT17MapRules } from './pseudo/t17-map-rules'
 import { filterItemProp, filterBasePercentile } from './pseudo/item-property'
 import { decodeOils, applyAnointmentRules } from './pseudo/anointments'
-import { StatBetter, CLIENT_STRINGS } from '@/assets/data'
+import { StatBetter, CLIENT_STRINGS, CLIENT_STRINGS_REF } from '@/assets/data'
 
 export interface FiltersCreationContext {
   readonly item: ParsedItem
@@ -50,6 +51,10 @@ export function createExactStatFilters (
     keepByType.push(ModifierType.Explicit)
   }
 
+  if (item.mapTier === 17) {
+    keepByType.push(ModifierType.Explicit)
+  }
+
   if (item.category === ItemCategory.Flask) {
     keepByType.push(ModifierType.Crafted)
   }
@@ -75,7 +80,10 @@ export function createExactStatFilters (
     applyMirroredTabletRules(ctx.filters)
     return ctx.filters
   }
-
+  if (item.mapTier === 17) {
+    applyT17MapRules(ctx.filters)
+    return ctx.filters
+  }
   for (const filter of ctx.filters) {
     filter.hidden = undefined
 
@@ -179,7 +187,7 @@ export function calculatedStatToFilter (
         ? FilterTag.Enchant
         : FilterTag.Variant,
       oils: decodeOils(calc),
-      sources: sources,
+      sources,
       option: {
         value: sources[0].contributes!.value
       },
@@ -199,7 +207,7 @@ export function calculatedStatToFilter (
     text: translation.string,
     tag: (type as unknown) as FilterTag,
     oils: decodeOils(calc),
-    sources: sources,
+    sources,
     roll: undefined,
     disabled: true
   }
@@ -218,24 +226,33 @@ export function calculatedStatToFilter (
       if (!fixedStats.includes(filter.statRef)) {
         filter.tag = FilterTag.Variant
       }
-    } else if (sources.some(s => CLIENT_STRINGS.SHAPER_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.SHAPER_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.SHAPER_MODS.includes(s.modifier.info.name!)))) {
       filter.tag = FilterTag.Shaper
-    } else if (sources.some(s => CLIENT_STRINGS.ELDER_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.ELDER_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.ELDER_MODS.includes(s.modifier.info.name!)))) {
       filter.tag = FilterTag.Elder
-    } else if (sources.some(s => CLIENT_STRINGS.HUNTER_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.HUNTER_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.HUNTER_MODS.includes(s.modifier.info.name!)))) {
       filter.tag = FilterTag.Hunter
-    } else if (sources.some(s => CLIENT_STRINGS.WARLORD_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.WARLORD_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.WARLORD_MODS.includes(s.modifier.info.name!)))) {
       filter.tag = FilterTag.Warlord
-    } else if (sources.some(s => CLIENT_STRINGS.REDEEMER_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.REDEEMER_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.REDEEMER_MODS.includes(s.modifier.info.name!)))) {
       filter.tag = FilterTag.Redeemer
-    } else if (sources.some(s => CLIENT_STRINGS.CRUSADER_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.CRUSADER_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.CRUSADER_MODS.includes(s.modifier.info.name!)))) {
       filter.tag = FilterTag.Crusader
-    } else if (sources.some(s => CLIENT_STRINGS.DELVE_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.DELVE_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.DELVE_MODS.includes(s.modifier.info.name!)))) {
       filter.tag = FilterTag.Delve
-    } else if (sources.some(s => CLIENT_STRINGS.VEILED_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.VEILED_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.VEILED_MODS.includes(s.modifier.info.name!)))) {
       // can't drop from ground, so don't show
       // filter.tag = FilterTag.Unveiled
-    } else if (sources.some(s => CLIENT_STRINGS.INCURSION_MODS.includes(s.modifier.info.name!))) {
+    } else if ((sources.some(s => CLIENT_STRINGS.INCURSION_MODS.includes(s.modifier.info.name!))) ||
+        (sources.some(s => CLIENT_STRINGS_REF.INCURSION_MODS.includes(s.modifier.info.name!)))) {
       filter.tag = FilterTag.Incursion
     }
   }
@@ -289,7 +306,7 @@ export function calculatedStatToFilter (
       bounds: (item.rarity === ItemRarity.Unique && roll.min !== roll.max && calc.stat.better !== StatBetter.NotComparable)
         ? filterBounds
         : undefined,
-      dp: dp,
+      dp,
       isNegated: false,
       tradeInvert: calc.stat.trade.inverted
     }

@@ -28,6 +28,9 @@ export interface ItemFilters {
   }
   linkedSockets?: FilterNumeric
   whiteSockets?: FilterNumeric
+  redSockets?: FilterNumeric
+  greenSockets?: FilterNumeric
+  blueSockets?: FilterNumeric
   corrupted?: {
     value: boolean
   }
@@ -47,6 +50,7 @@ export interface ItemFilters {
   quality?: FilterNumeric
   gemLevel?: FilterNumeric
   mapTier?: FilterNumeric
+  mapReward?: string
   mapBlighted?: {
     value: NonNullable<ParsedItem['mapBlighted']>
   }

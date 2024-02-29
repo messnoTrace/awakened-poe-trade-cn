@@ -30,8 +30,9 @@ export class HeistGemFinder {
   private constructor (
     private readonly needleMat: any,
     private readonly hsvMin: any,
-    private readonly hsvMax: any
+    private readonly hsvMax: any,
   ) {}
+
 
   static async create (binDir: string): Promise<HeistGemFinder> {
     const needleImg = Bmp.decode(await fs.readFile(binDir + '/heist-lock.bmp'), { toRGBA: true })
@@ -42,7 +43,6 @@ export class HeistGemFinder {
     hsvMin.data.set(TEXT_HSV_MIN)
     const hsvMax = new cv.Mat(3, 1, cv.CV_8U)
     hsvMax.data.set(TEXT_HSV_MAX)
-
     return new HeistGemFinder(needleMat, hsvMin, hsvMax)
   }
 
@@ -102,7 +102,8 @@ export class HeistGemFinder {
       elapsed += timeIt(() => {
         tessApi.Recognize()
       })
-      const text = tessApi.GetUTF8Text().trim()
+      const text = tessApi.GetUTF8Text().replace(/\([a-zA-Z]+?\)/g, '').replace(/\s+/g, ' ').trim()
+      console.log(text + '\n')
       const confidence = tessApi.MeanTextConf()
       if (text.length > 0 && confidence > 30) {
         recognizedLines.push({ text, confidence })
@@ -119,7 +120,6 @@ export class HeistGemFinder {
       linesMax: Math.max(...linesWeight),
       recognized: recognizedLines
     }
-    // console.log(results)
     return results
   }
 }

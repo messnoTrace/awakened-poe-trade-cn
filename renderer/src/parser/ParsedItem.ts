@@ -34,6 +34,7 @@ export interface ParsedItem {
   weaponELEMENTAL?: number
   mapBlighted?: 'Blighted' | 'Blight-ravaged'
   mapTier?: number
+  mapReward?: string
   gemLevel?: number
   areaLevel?: number
   talismanTier?: number
@@ -41,6 +42,9 @@ export interface ParsedItem {
   sockets?: {
     linked?: number // only 5 or 6
     white: number
+    red: number
+    green: number
+    blue: number
   }
   stackSize?: { value: number, max: number }
   isUnidentified: boolean

@@ -2,12 +2,14 @@ import type { ItemFilters } from './interfaces'
 import { ParsedItem, ItemCategory, ItemRarity } from '@/parser'
 import { tradeTag } from '../trade/common'
 import { ModifierType } from '@/parser/modifiers'
-import { BaseType, ITEM_BY_REF } from '@/assets/data'
+import { BaseType, ITEM_BY_REF, ITEM_BY_TRANSLATED } from '@/assets/data'
 import { CATEGORY_TO_TRADE_ID } from '../trade/pathofexile-trade'
+import { AppConfig } from '@/web/Config'
 
 export const SPECIAL_SUPPORT_GEM = ['Empower Support', 'Enlighten Support', 'Enhance Support']
 
 interface CreateOptions {
+  offline: boolean
   league: string
   currency: string | undefined
   collapseListings: 'app' | 'api'
@@ -23,7 +25,7 @@ export function createFilters (
   const filters: ItemFilters = {
     searchExact: {},
     trade: {
-      offline: false,
+      offline: opts.offline,
       onlineInLeague: false,
       listed: undefined,
       currency: opts.currency,
@@ -113,6 +115,10 @@ export function createFilters (
       filters.mapBlighted = { value: item.mapBlighted }
     }
 
+    if (item.mapReward) {
+      filters.mapReward = AppConfig().realm === 'pc-ggg' ? ITEM_BY_TRANSLATED('UNIQUE', item.mapReward)![0].refName : ITEM_BY_TRANSLATED('UNIQUE', item.mapReward)![0].name
+    }
+
     filters.mapTier = {
       value: item.mapTier!,
       disabled: false
@@ -171,7 +177,7 @@ export function createFilters (
       }
       filters.searchRelaxed = {
         category: item.category,
-        disabled: disabled
+        disabled
       }
     }
   }
@@ -192,7 +198,7 @@ export function createFilters (
     }
   }
 
-  if (item.sockets?.linked) {
+  if (item.sockets?.linked && !(item.info.refName === 'Skin of the Lords' || item.info.refName === 'Skin of the Loyal')) {
     filters.linkedSockets = {
       value: item.sockets.linked,
       disabled: false
@@ -202,6 +208,27 @@ export function createFilters (
   if (item.sockets?.white) {
     filters.whiteSockets = {
       value: item.sockets.white,
+      disabled: false
+    }
+  }
+
+  if (item.sockets?.red && (item.info.refName === 'Skin of the Lords' || item.info.refName === 'Skin of the Loyal')) {
+    filters.redSockets = {
+      value: item.sockets.red,
+      disabled: false
+    }
+  }
+
+  if (item.sockets?.green && (item.info.refName === 'Skin of the Lords' || item.info.refName === 'Skin of the Loyal')) {
+    filters.greenSockets = {
+      value: item.sockets.green,
+      disabled: false
+    }
+  }
+
+  if (item.sockets?.blue && (item.info.refName === 'Skin of the Lords' || item.info.refName === 'Skin of the Loyal')) {
+    filters.blueSockets = {
+      value: item.sockets.blue,
       disabled: false
     }
   }

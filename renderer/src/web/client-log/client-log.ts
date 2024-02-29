@@ -63,8 +63,10 @@ export function handleLine (line: string) {
   entry.charName = match.groups!.char_name
   entry.body = match.groups!.body
 
+  const CN = AppConfig().language === 'zh_CN' || AppConfig().language === 'cmn-Hant'
+
   if (entry.сhannel === MessageChannel.WHISPER_FROM) {
-    if ((match = entry.body.match(TRADE_WHISPER[AppConfig().language]))) {
+    if ((match = entry.body.match(TRADE_WHISPER[(AppConfig().realm === 'pc-ggg' && CN) ? 'en' : AppConfig().language]))) {
       const [pAmount, pTag] = [
         match.groups!.price.split(' ', 1).toString(),
         match.groups!.price.split(' ').slice(1).join(' ')
@@ -97,7 +99,7 @@ export function handleLine (line: string) {
       }
 
       // console.log(entry)
-    } else if ((match = entry.body.match(TRADE_BULK_WHISPER[AppConfig().language]))) {
+    } else if ((match = entry.body.match(TRADE_BULK_WHISPER[(AppConfig().realm === 'pc-ggg' && CN) ? 'en' : AppConfig().language]))) {
       const [pAmount, pName] = [
         match.groups!.price.split(' ', 1).toString(),
         match.groups!.price.split(' ').slice(1).join(' ')
@@ -121,6 +123,14 @@ export function handleLine (line: string) {
       // console.log(entry)
     }
   }
+
+  if (entry.сhannel === MessageChannel.SYSTEM) {
+    if ((match = entry.body.match(ENTER_AREA[(AppConfig().realm === 'pc-ggg' && CN) ? 'en' : AppConfig().language]))) {
+      if (match.groups!.area === 'Aspirants\' Plaza') {
+        console.log()
+      }
+    }
+  }
 }
 
 const TRADE_WHISPER = {
@@ -132,12 +142,22 @@ const TRADE_WHISPER = {
   'es': /^Hola, quisiera comprar tu (?<item>.+) listado por (?<price>.+) en (?<league>.+) \(pestaña de alijo "(?<tab_name>.*)"; posición: izquierda(?<tab_left>\d+), arriba (?<tab_top>\d+)\)(?<message>.+)?$/,
   'pt': /^Olá, eu gostaria de comprar o seu item (?<item>.+) listado por (?<price>.+) na (?<league>.+) \(aba do baú: "(?<tab_name>.*)"; posição: esquerda (?<tab_left>\d+), topo (?<tab_top>\d+)\)(?<message>.+)?$/,
   'th': /^สวัสดี, เราต้องการจะชื้อของคุณ (?<item>.+) ใน ราคา (?<price>.+) ใน (?<league>.+) \(stash tab "(?<tab_name>.*)"; ตำแหน่ง: ซ้าย (?<tab_left>\d+), บน (?<tab_top>\d+)\)(?<message>.+)?$/,
-  'cmn-Hant': /^你好，我想購買 (?<item>.+) 標價 (?<price>.+) 在 (?<league>.+) \(倉庫頁 "(?<tab_name>.*)"; 位置: 左 (?<tab_left>\d+), 上 (?<tab_top>\d+)\)(?<message>.+)?$/
+  'cmn-Hant': /^你好，我想購買 (?<item>.+) 標價 (?<price>.+) 在 (?<league>.+) \(倉庫頁 "(?<tab_name>.*)"; 位置: 左 (?<tab_left>\d+), 上 (?<tab_top>\d+)\)(?<message>.+)?$/,
+  'zh_CN': /^你好，我希望购买你的(?<item>.+)，标价(?<price>.+)，在(?<league>.+) \(市集页 "(?<tab_name>.*)"; 位置: 左起 (?<tab_left>\d+), 上起 (?<tab_top>\d+)\)(?<message>.+)?$/
 }
 
 const TRADE_BULK_WHISPER = {
   'en': /^Hi, I'd like to buy your (?<item>.+) for my (?<price>.+) in (?<league>.+)\.(?<message>.+)?$/,
   'ru': /^Здравствуйте, хочу купить у вас (?<item>.+) за (?<price>.+) в лиге (?<league>.+)\.(?<message>.+)?$/,
   'cmn-Hant': /^你好，我想用 (?<price>.+) 購買 (?<item>.+) in (?<league>.+)\.(?<message>.+)?$/,
+  'zh_CN': /^你好，我希望购买你的(?<item>.+)用于我的(?<price>.+)，在(?<league>.+)(?<message>.+)?$/,
+  'ko': /^_FIX_ME_$/
+}
+
+const ENTER_AREA = {
+  'en': /^(?<A_patch>.+?)You have entered (?<area>.+)\.$/,
+  'ru': /^Здравствуйте, хочу купить у вас (?<item>.+) за (?<price>.+) в лиге (?<league>.+)\.(?<message>.+)?$/,
+  'cmn-Hant': /^你好，我想用 (?<price>.+) 購買 (?<item>.+) in (?<league>.+)\.(?<message>.+)?$/,
+  'zh_CN': /^(?<A_patch>.+?)你已进入： (?<area>.+)。$/,
   'ko': /^_FIX_ME_$/
 }
